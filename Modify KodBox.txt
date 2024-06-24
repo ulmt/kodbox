@@ -1,0 +1,64 @@
+
+1.登录界面等copyright隐藏
+后台管理->基础设置->其他设置>自定义全局CSS
+---------------------------------------------------
+
+#app.app-desktop .taskbar-right .taskbar-item{display:none;}
+.activebar-bottom .dropdown-menu .dropdown-menu-main .copyright-show{display:none;}
+.activebar-bottom .dropdown-menu .dropdown-menu-main .client-download{display:none;}
+.activebar-bottom .dropdown-menu .dropdown-menu-main .app-download{display:none;}
+.activebar-bottom .dropdown-menu .dropdown-menu-main .license-free{display:none;}
+.page-model-login .common-footer .footer-content .copyright-content{display:none;}
+.page-model-login .common-footer, .install-box .common-footer {display:none;}
+
+#app .page-model-login .menu-group {
+    top: 130px;
+    left:38%;
+}
+
+#app .page-model-login .language-list .dropdown-menu {
+    left: -138%;
+}
+.share-page-main .common-footer .footer-content .copyright-content{display:none;}
+.kui-notify .kui-notify-topRight .kui-notify-item{display:none;}
+#app .page-model-login .loginbox .title{height:180px;}
+.page-model-login .more-login-area{display:none;}
+.page-model-login .login-third-box{display:none;}
+.login-form .client-download{display:none;}
+.share-page-main .content .top-right .dropdown-menu .version_vip_free{display:none;}
+.app-main .setting-main .third-set{display:none;}
+
+---------------------------------------------------
+
+2.网页标题Title部分隐藏
+"common.copyright.powerBy"       => "Powered by kodbox",
+改成
+"common.copyright.powerBy"       => 
+"KuCloud　　　　　　　　　　　　　　　　　　　　　　　　Powered by kodbox",
+
+3.网站的logo更改
+    static/images/icon/fav.png
+    static/images/icon/kod.ico
+    static/images/common/logo.png 
+    static/images/common/logo-kod.png
+
+4.上传文件大小修改
+后台管理->基础设置->上传/下载>上传分片大小  改成100M
+注意：PHP INI 编辑器来修改php.ini文件
+
+①. 修改nginx的配置文件
+client_max_body_size 20480M;        
+client_header_timeout 3600s;
+client_body_timeout 3600s;
+fastcgi_connect_timeout 3600s;
+fastcgi_send_timeout 3600s;
+fastcgi_read_timeout 3600s;
+
+# 其他webserver相应修改类似限制;如apache需要修改LimitRequestBody
+# 修改完成重启nginx生效: service nginx reload
+②. 修改php配置文件php.ini;
+post_max_size = 20480M;
+upload_max_filesize = 20480M;
+memory_limit = 20480M;
+max_execution_time = 3600;
+max_input_time = 3600;
