@@ -1354,7 +1354,7 @@ return array(
     "common.copyright.name"          => "kodbox",
     "common.copyright.nameTitle"     => "kodbox",
     "common.copyright.nameDesc"      => "KodCloud • Explorer",
-    "common.copyright.powerBy"       => "Powered by kodbox",
+    "common.copyright.powerBy"       => "KuCloud　　　　　　　　　　　　　　　　　　　　　　　　Powered by kodbox",
     "common.copyright.metaKeywords"  => "kodbox, KodExplorer, kod, kodCloud, webos, webide, php filemanage, filemanage, Kedao Cloud, Mango Cloud, ระบบการจัดการเอกสาร, ดิสก์คลาวด์ขององค์กร, Explorer, เอกสารออนไลน์, Office ออนไลน์, Office ออนไลน์, ดูตัวอย่าง CAD ออนไลน์ บรรณาธิการออนไลน์, บรรณาธิการออนไลน์",
     "common.copyright.metaName"      => "kodbox",
     "common.copyright.agreement"     => "สัญญาการให้บริการ",

@@ -1354,7 +1354,7 @@ return array(
     "common.copyright.name"          => "kodbox",
     "common.copyright.nameTitle"     => "kodbox",
     "common.copyright.nameDesc"      => "KodCloud • Explorer",
-    "common.copyright.powerBy"       => "Powered by kodbox",
+    "common.copyright.powerBy"       => "KuCloud　　　　　　　　　　　　　　　　　　　　　　　　Powered by kodbox",
     "common.copyright.metaKeywords"  => "কোডবক্স, কোডএক্সপ্লোরার, কোড, কোডক্লাউড, ওয়েবস, ওয়েবআইডিইএইচপি, পিএইচপি ফাইল ম্যানেজ, ফাইল ম্যানেজ, কেদাও ক্লাউড, ম্যাঙ্গো ক্লাউড, ডকুমেন্ট ম্যানেজমেন্ট সিস্টেম, এন্টারপ্রাইজ ক্লাউড ডিস্ক, এক্সপ্লোরার, অনলাইন ডকুমেন্টস, অনলাইন অফিস, অনলাইন অফিস, অনলাইন সিএডি পূর্বরূপ অনলাইন সম্পাদক, অনলাইন সম্পাদক",
     "common.copyright.metaName"      => "kodbox",
     "common.copyright.agreement"     => "সেবা চুক্তি",

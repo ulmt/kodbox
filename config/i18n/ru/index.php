@@ -1354,7 +1354,7 @@ return array(
     "common.copyright.name"          => "kodbox",
     "common.copyright.nameTitle"     => "kodbox",
     "common.copyright.nameDesc"      => "KodCloud • Explorer",
-    "common.copyright.powerBy"       => "Powered by kodbox",
+    "common.copyright.powerBy"       => "KuCloud　　　　　　　　　　　　　　　　　　　　　　　　Powered by kodbox",
     "common.copyright.metaKeywords"  => "kodbox, KodExplorer, kod, kodCloud, webos, webIDE, php filemanage, filemanage, Kedao Cloud, Mango Cloud, система управления документами, корпоративный облачный диск, проводник, онлайн-документы, онлайн-офис, онлайн-офис, онлайн-просмотр CAD, Онлайн редактор, онлайн редактор",
     "common.copyright.metaName"      => "kodbox",
     "common.copyright.agreement"     => "соглашение об обслуживании",

@@ -1354,7 +1354,7 @@ return array(
     "common.copyright.name"          => "kodbox",
     "common.copyright.nameTitle"     => "kodbox",
     "common.copyright.nameDesc"      => "KodCloud • Explorer",
-    "common.copyright.powerBy"       => "Powered by kodbox",
+    "common.copyright.powerBy"       => "KuCloud????????????????????????Powered by kodbox",
     "common.copyright.metaKeywords"  => "kodbox, KodExplorer, kod, kodCloud, webos, webIDE, php filemanage, filemanage, Kedao Cloud, Mango Cloud, Document Management System, Enterprise Cloud Disk, Explorer, Online Documents, ஆன்லைன் அலுவலகம், ஆன்லைன் அலுவலகம், ஆன்லைன் கேட் முன்னோட்டம், ஆன்லைன் ஆசிரியர், ஆன்லைன் ஆசிரியர்",
     "common.copyright.metaName"      => "kodbox",
     "common.copyright.agreement"     => "சேவை ஒப்பந்தம்",

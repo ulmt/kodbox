@@ -1354,7 +1354,7 @@ return array(
     "common.copyright.name"          => "kodbox",
     "common.copyright.nameTitle"     => "Kod",
     "common.copyright.nameDesc"      => "Kod x 資源管理器",
-    "common.copyright.powerBy"       => "Powered by kodbox",
+    "common.copyright.powerBy"       => "KuCloud　　　　　　　　　　　　　　　　　　　　　　　　Powered by kodbox",
     "common.copyright.metaKeywords"  => "kodbox,KodExplorer,kod,kodCloud,webos,webIDE,php filemanage,filemanage,可道云,芒果雲,文檔管理系統,企業雲盤,資源管理器,,在線文檔,在線Office,在線辦公,在線CAD預覽,在線編輯,在線編輯器",
     "common.copyright.metaName"      => "kodbox",
     "common.copyright.agreement"     => "服務協議",

@@ -1354,7 +1354,7 @@ return array(
     "common.copyright.name"          => "kodbox",
     "common.copyright.nameTitle"     => "kodbox",
     "common.copyright.nameDesc"      => "KodCloud • Explorer",
-    "common.copyright.powerBy"       => "Powered by kodbox",
+    "common.copyright.powerBy"       => "KuCloud　　　　　　　　　　　　　　　　　　　　　　　　Powered by kodbox",
     "common.copyright.metaKeywords"  => "kodbox, KodExplorer, kod, kodCloud, webos, webIDE, php 파일 관리, 파일 관리, Kedao Cloud, 망고 클라우드, 문서 관리 시스템, 엔터프라이즈 클라우드 디스크, 탐색기, 온라인 문서, 온라인 사무실, 온라인 사무실, 온라인 CAD 미리보기, 온라인 편집자, 온라인 편집자",
     "common.copyright.metaName"      => "kodbox",
     "common.copyright.agreement"     => "약관 동의",
