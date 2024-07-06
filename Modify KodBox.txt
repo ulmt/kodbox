@@ -1,5 +1,5 @@
 
-1.登录界面等copyright隐藏
+1.主页登录界面等copyright隐藏
 后台管理->基础设置->其他设置>自定义全局CSS
 ---------------------------------------------------
 
@@ -31,10 +31,11 @@
 ---------------------------------------------------
 
 2.网页标题Title部分隐藏
+修改config/i18n/目标语言/index.php，把标题文字改长
+
 "common.copyright.powerBy"       => "Powered by kodbox",
-改成
-"common.copyright.powerBy"       => 
-"KuCloud　　　　　　　　　　　　　　　　　　　　　　　　Powered by kodbox",
+比方
+"common.copyright.powerBy"       => "KuCloud　　　　　　　　　　　　　　　　　　　　　　　　Powered by kodbox",
 
 3.网站的logo更改
     static/images/icon/fav.png
