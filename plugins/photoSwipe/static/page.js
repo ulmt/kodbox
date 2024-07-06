@@ -146,12 +146,20 @@ define(function(require, exports) {
 			});
 		});
 		
-		// 最后一个处理; 缩放位置异常还原;
+		// 超过3张图片, 打开最后一张时缩放位置异常处理; 重置位置及大小;
 		if(imageCount >= 3 && imageCount == imageList.index + 1){
-			setTimeout(function(){gallery.next();gallery.prev();},600);
+			setTimeout(function(){
+				gallery.next();gallery.prev();return;// 会有一次闪烁;
+
+				gallery.currItem.container = $('.pswp__img--placeholder').parent().get(0);
+				setTimeout(function(){ // setcontent, 每次都会从新生成currItem.container情况;
+					gallery.currItem.container = $('.pswp__img--placeholder').parent().get(0);
+				},100);
+				gallery.updateSize(); // 关闭时,没有动画切换回到原图
+			},350);
 		}
 		
-		// 两种图片时,打开最后一个加载完成异常情况处理;
+		// 两张图片时,打开最后一个加载完成异常情况处理;
 		if(imageCount == 2 && imageList.index == 1){
 			setTimeout(function(){
 				var $img = $('.pswp__container .pswp__item:eq(2) .pswp__img:not(.pswp__img--placeholder)');
@@ -314,19 +322,39 @@ define(function(require, exports) {
 	// 显示原图; 如果设置有原图的情况;
 	var bindShowImateTrue = function(){
 		var $button = $('.pswp__button--show-true');
+		var $download = $('.pswp__button--download'),canDownloadCheck = false;
 		if(!$button.length){
 			var html = '<button class="pswp__button pswp__button--show-true">'+(LNG['photoSwipe.showTrue'] || '')+'</button>';
 			$button = $(html).insertAfter('.pswp__button--zoom');
 		}
+		if(!$download.length){
+			var html = '<button class="pswp__button pswp__button--download"><i>'+(LNG['common.download'] || '')+'</i></button>';
+			$download = $(html).insertAfter('.pswp__button--zoom');
+		}
+		
 		var imageChange = function(){
 			var currItem = gallery.currItem;
 			if(!currItem || !currItem.src){return;}
+			if(!canDownloadCheck){
+				canDownloadCheck = true;
+				if($('.share-page-main.share-not-download').length){
+					$download.addClass('hidden');
+				}
+			}
 			var method = currItem.trueImage ? 'removeClass':'addClass';
 			$button[method]('hidden');
 		};imageChange();
 		gallery.listen('afterChange',imageChange);
 		gallery.listen('afterErrorReload',imageChange);
-		
+
+		// 图片下载;
+		$download.unbind('click').bind('click', function(e){
+			var currItem  = gallery.currItem;
+			if(!currItem){return;}
+			var url = currItem.srcFile || currItem.src;
+			if(url.indexOf('?')){url += '&download=1';}
+			window.open(url);
+		});
 		$button.unbind('click').bind('click', function(e){
 			var currItem  = gallery.currItem;
 			if(!currItem || !currItem.trueImage){return;}
@@ -335,6 +363,12 @@ define(function(require, exports) {
 			var $img = $(currItem.container).find('.pswp__img:not(.pswp__img--placeholder)');
 			var loading = $(".pswp__item.current").loadingMask(LNG['explorer.getting'])
 			$img.attr('src',currItem.src).bind('load',function(){
+				var style = {width:$img.width(),height:$img.height()};
+				$img.css({width:'',height:''});
+				currItem.w = $img.width();currItem.h = $img.height();
+				$img.css(style); // 更新图片尺寸;
+				photoSwipeView.updateSize();
+				
 				currItem.trueImage = false;imageChange();
 				loading.close();
 				$img.hide().fadeIn();
