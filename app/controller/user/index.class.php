@@ -23,6 +23,9 @@ class userIndex extends Controller {
 		if( !file_exists(USER_SYSTEM . 'install.lock') ){
 			return ActionCall('install.index.check');
 		}
+		if( !file_exists(BASIC_PATH . 'config/setting_user.php') || empty($GLOBALS['config']['database'])){
+			show_tips(LNG('explorer.sysSetUserError'));
+		}
 		$this->initDB();   		//
 		Action('filter.index')->bindBefore();
 		$this->initSession();   //
@@ -40,6 +43,7 @@ class userIndex extends Controller {
 		}
 	}
 	public function shutdownEvent(){
+		$GLOBALS['requestShutdownGlobal'] = true;// 请求结束后状态标记;
 		TaskQueue::addSubmit();		// 结束后有任务时批量加入
 		TaskRun::autoRun();			// 定期执行及延期任务处理;
 		CacheLock::unlockRuntime(); // 清空异常时退出,未解锁的加锁;
@@ -67,7 +71,7 @@ class userIndex extends Controller {
 			if($action == 'user.index.index'){Cookie::disable(false);} // 带token的url跳转入口页面允许cookie输出;
 			Session::sign($sessionSign);
 		}
-		if(!Session::get('kod')){
+		if(!$GLOBALS['disableSession'] && !Session::get('kod')){
 			Session::set('kod',1);
 			if(!Session::get('kod')){show_tips(LNG('explorer.sessionSaveError'));}
 		}
@@ -230,7 +234,7 @@ class userIndex extends Controller {
 	 * @param [type] $password
 	 */
 	public function userInfo($name, $password){
-		$user = Model("User")->userLoginCheck($name,$password);
+		$user = Model("User")->userLoginCheck($name,$password,true);
 		if(!is_array($user)) {
 			$userHook = Hook::trigger("user.index.userInfo",$name, $password);
 			if(is_array($userHook)) return $userHook;// 第三方登陆不做检测处理;
@@ -247,11 +251,11 @@ class userIndex extends Controller {
 		Hook::trigger('user.index.logoutBefore',$user);
 		
 		$lastLogin = time() - $GLOBALS['config']['cache']['sessionTime'] - 10;
-		Model('User')->userEdit($user['userID'],array("lastLogin"=>$lastLogin));
+		Model('User')->userEdit($user['userID'],array("lastLogin"=>$lastLogin)); 
 		Session::destory();
 		Cookie::remove(SESSION_ID,true);
 		Cookie::remove('kodToken');
-		del_dir($BASIC_PATH.'data/temp/_cache');
+		Action('user.sso')->logout(); // 单点登录同步跟随退出;清理缓存;
 		show_json('ok');
 	}
 
@@ -264,18 +268,15 @@ class userIndex extends Controller {
 		$res = $this->loginWithThird();	// app第三方账号登录
 		if($res || $res !== false) return $res;
 		$data = Input::getArray(array(
-			"name"		=> array("check"=>"require",'lengthMax'=>100),
-			"password"	=> array('check'=>"require",'lengthMax'=>100),
-			"salt"		=> array("default"=>false),
+			"name"		=> array("check"=>"require",'lengthMax'=>500),
+			"password"	=> array('check'=>"require",'lengthMax'=>500),
 		));
 		$checkCode = Input::get('checkCode', 'require', '');
 		if( need_check_code() && $data['name'] != 'guest'){
 			Action('user.setting')->checkImgCode($checkCode);
 		}
-		if ($data['salt']) {
-			$key = substr($data['password'], 0, 5) . "2&$%@(*@(djfhj1923";
-			$data['password'] = Mcrypt::decode(substr($data['password'], 5), $key);
-		}
+		$data['password'] = KodUser::parsePass($data['password']);
+
 		$user = $this->userInfo($data['name'],$data['password']);
 		if (!is_array($user)){
 			show_json($this->loginErrMsg($user),false);
@@ -351,7 +352,7 @@ class userIndex extends Controller {
 	}
 	
 	/**
-	 * app端请求
+	 * app端请求——弃用？
 	 */
 	private function findPwdWidthApp(){
 		// api，直接填写手机/邮箱验证码、密码进行修改
@@ -424,7 +425,7 @@ class userIndex extends Controller {
 		}
 		
 		$userID  = Session::get('kodUser.userID');
-		$timeout = $timeout ? $timeout : 3600*24*3;
+		$timeout = $timeout ? $timeout : 3600*24*30; // 咱不使用, 默认一直有效;
 		$param   = '';
 		$keyList = array(strtolower($action));
 		$signArr = array(strtolower($action),$appSecret);

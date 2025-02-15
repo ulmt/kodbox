@@ -131,7 +131,6 @@ CREATE TABLE "io_file_contents" (
 CREATE INDEX 'idx_io_file_contents_primary_key' ON 'io_file_contents' ("fileID");
 CREATE INDEX 'idx_io_file_contents_createTime' ON 'io_file_contents' ("createTime");
 CREATE INDEX 'idx_io_file_contents_content' ON 'io_file_contents' ("content");
-CREATE INDEX 'idx_io_file_contents_content_full' ON 'io_file_contents' ("content");
 
 DROP TABLE IF EXISTS "io_file_meta";
 CREATE TABLE "io_file_meta" (
@@ -187,6 +186,7 @@ CREATE INDEX 'idx_io_source_targetType_targetID_parentID' ON 'io_source' ("targe
 CREATE INDEX 'idx_io_source_parentID_isDelete' ON 'io_source' ("parentID","isDelete");
 CREATE INDEX 'idx_io_source_name' ON 'io_source' ("name");
 CREATE INDEX 'idx_io_source_fileType' ON 'io_source' ("fileType");
+CREATE INDEX 'idx_io_source_parentID_name' ON 'io_source' ("parentID","name");
 
 DROP TABLE IF EXISTS "io_source_auth";
 CREATE TABLE "io_source_auth" (

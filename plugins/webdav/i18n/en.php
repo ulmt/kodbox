@@ -1,6 +1,6 @@
 <?php
 return array(
-	'webdav.meta.name'			=> "WebDAV Mount",
+	'webdav.meta.name'			=> "WebDAV Services",
 	'webdav.meta.title'			=> "WebDAV Mount to network drive",
 	'webdav.meta.desc'			=> "The driver documents can be linked to the current computer or app, and the file management can be as convenient and fast as the local hard disk; at the same time, the files can be edited and saved in real time",
 	'webdav.config.isOpen'		=> "Open WebDAV",
@@ -12,6 +12,8 @@ return array(
 	'webdav.user.morePath'			=> "More Path",
 	'webdav.config.logTitle'		=> "Request log",
 	'webdav.config.logDesc'			=> "WebDAV request log",
+	'webdav.config.systemAutoMount'	=> "Client auto mount",
+	'webdav.config.systemAutoMountDesc'	=> "PC client is opened, webdav is automatically mounted",
 	
 	'webdav.tips.https'			=> "<b>https:</b> HTTPS is recommended, encrypted transmission is more secure; (the default limit for windows mount WebDAV must be HTTPS, which can be removed)",
 	'webdav.tips.upload'		=> "<b>Upload and download restrictions:</b> The maximum file upload support depends on the upload limit and timeout of the server,It can be set according to your own needs; recommended upload file size limit: 500MB; timeout 3600; <a href='https://doc.kodcloud.com/#/others/options' target='_blank'>Learn more</a>",

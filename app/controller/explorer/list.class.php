@@ -68,6 +68,7 @@ class explorerList extends Controller{
 		Action('explorer.recycleDriver')->appendList($data,$pathParse);
 		Action('explorer.listGroup')->appendChildren($data);
 		Action('explorer.listSafe')->appendSafe($data);
+		Action('explorer.listPassword')->appendSafe($data);
 		
 		$this->pathListParse($data);// 1000 => 50ms; all-image=200ms;
 		$this->pageReset($data);
@@ -626,7 +627,9 @@ class explorerList extends Controller{
 			isset($pathInfo['oexeContent']['value']) ){
 			$linkPath = $pathInfo['oexeContent']['value'];
 			$parse = KodIO::parse($pathInfo['path']);
+			$parsePath = KodIO::parse($linkPath);
 			if($parse['type'] == KodIO::KOD_SHARE_LINK) return $pathInfo;
+			if(!$parsePath['isTruePath']){return $pathInfo;}
 			
 			if(Action('explorer.auth')->fileCan($linkPath,'show')){
 				if(substr($linkPath,0,4) == '{io:'){ //io路径不处理;

@@ -13,6 +13,7 @@ class explorerListSearch extends Controller{
 	
 	// {search}/key=val@key2=value2;
 	public function listSearch($pathInfo){
+		set_timeout();
 		if( !Action('user.authRole')->authCanSearch() ){
 			show_json(LNG('explorer.noPermissionAction'),false);
 		}
@@ -174,8 +175,9 @@ class explorerListSearch extends Controller{
 				$param[$key] = array_filter(explode(',',$paramIn[$key]));
 			}
 			if($key == 'wordsMutil'){
-				$param[$key] = array_filter(explode("\n",$paramIn[$key]));
-				$param[$key] = array_values($param[$key]);
+				$param[$key] = str_replace(array("\r","\r\n"), "\n",$paramIn[$key]);
+				$param[$key] = array_filter(explode("\n",$param[$key]));
+				$param[$key] = array_unique(array_values($param[$key]));
 			}
 		}
 		
@@ -187,14 +189,19 @@ class explorerListSearch extends Controller{
 		
 		$searchPath     	= $param['parentPath'] ? $param['parentPath'] : MY_HOME;
 		$param['words'] 	= trim($param['words'], '/');
-		$param['parentID']  = $this->searchPathSource($searchPath);
+		$param['parentID']  = $this->searchPathSource($searchPath, $param['option']);
 	}
 	
-	public function searchPathSource($path){
+	public function searchPathSource($path, $option = false){
 		if(!$path) return false;
 		$path  = trim($path,'/');
 		$parse = KodIO::parse($path);
-		Action('explorer.auth')->canView($path); //权限检测;
+		// 权限检测; 搜索内容->view；搜索名称->show
+		$action = 'view';
+		if (is_array($option)) {
+			$action = in_array('content', $option) ? 'view' : 'show';
+		}
+		Action('explorer.auth')->can($path, $action);	// canView
 		if($parse['type'] == KodIO::KOD_SHARE_ITEM){
 			$shareID  	= $parse['id'];
 			$sourceID 	= trim($parse['param'],'/');

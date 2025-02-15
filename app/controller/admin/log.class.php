@@ -42,6 +42,9 @@ class adminLog extends Controller{
             array('id' => 'explorer.index.fileDownload', 'text' => LNG('admin.log.downFile')),
             array('id' => 'explorer.fav.add', 'text' => LNG('explorer.addFav')),
             array('id' => 'explorer.fav.del', 'text' => LNG('explorer.delFav')),
+            array('id' => 'explorer.history.remove', 'text' => ''), // 删除历史版本
+            array('id' => 'explorer.history.rollback', 'text' => ''),   // 回滚历史版本
+            array('id' => 'explorer.history.clear', 'text' => ''),  // 清空历史版本——合并为历史版本操作，无需单独显示
         );
 		if(!is_array($list['file']['children'])){$list['file']['children'] = array();}
 		$list['file']['children'] = array_merge($list['file']['children'], $fileList);
@@ -60,6 +63,7 @@ class adminLog extends Controller{
 				'explorer.index.fileOut,explorer.index.fileDownload' => LNG('admin.log.downFile'),
 				'file.shareLinkAdd,file.shareLinkRemove' => LNG('log.file.shareLink'),
 				'file.shareToAdd,file.shareToRemove' => LNG('log.file.shareTo'),
+				'explorer.history.remove,explorer.history.rollback,explorer.history.clear' => LNG('explorer.history.action'),
 			),
 			'user' => array(
 				'user.setting.setHeadImage,user.setting.setUserInfo' => LNG('log.user.edit'),
@@ -142,10 +146,12 @@ class adminLog extends Controller{
     /**
      * 记录日志
      * @param boolean $data
+     * @param boolean $info
      * @return void
      */
-    public function add($data=false){
+    public function add($data=false, $info=null){
         if (isset($this->in['disableLog']) && $this->in['disableLog'] == '1') return;
+        $this->fileUploadLog($data, $info);
         $typeList = $this->typeListAll();
         if(!isset($typeList[ACTION])) return;
 		if($GLOBALS['loginLogSaved'] ==1) return;
@@ -157,15 +163,21 @@ class adminLog extends Controller{
         if(!in_array(ACTION, $actionList)){
             // 文件类的操作，此处只收集这3个
             if(MOD == 'explorer') {
-                $act = ST . '.' . ACT;
-                $func = array('fav.add', 'fav.del', 'index.fileOut', 'index.fileDownload', 'index.zipDownload');
+                $act  = ST . '.' . ACT;
+                $func = array(
+                    'fav.add', 'fav.del', 
+                    'index.fileOut', 'index.fileDownload', 'index.zipDownload',
+                    'history.remove', 'history.rollback', 'history.clear',
+                );
                 if(!in_array($act, $func)) return;
                 if (in_array(ACT, array('fileOut', 'fileDownload'))) { // 多线程下载，或某些浏览器会请求多次
                     if (!$this->checkHttpRange()) return;
                 } else if (ACT == 'zipDownload') {
-                    if (isset($this->in['zipClient']) && $this->in['zipClient'] == '1') {
-                        $data = false;  // 前端压缩下载会返回列表，故下方以$this->in赋值
-                    }
+                    // 前端压缩下载返回文件列表，列表文件分别请求下载（并记录日志），故此处不记录
+                    if (_get($this->in, 'zipClient') == '1' && _get($this->in, 'zipDownloadDisable') == '1') return;
+                    // if (isset($this->in['zipClient']) && $this->in['zipClient'] == '1') {
+                    //     $data = false;  // 前端压缩下载会返回列表，故下方以$this->in赋值
+                    // }
                 }
             }
             if(!is_array($data)) $data = $this->filterIn();
@@ -319,6 +331,14 @@ class adminLog extends Controller{
                 $this->in['driver'] = $info['driver'];  // 谨慎追加参数，避免影响主方法调用
             }
         }
+        // 历史版本，追加当前操作的版本号；只记录source文件
+        if (ST == 'history' && ACT != 'clear') {
+            $parse = KodIO::parse($this->in['path']);
+            if ($parse['type'] == KodIO::KOD_SOURCE && $parse['id']) {
+                $info = Model('SourceHistory')->fileInfo($this->in['id'],true);
+                if ($info) $this->in['fileInfo'] = $info;
+            }
+        }
         Hook::bind('show_json', array($this, 'autoLog'));
         Hook::bind('explorer.fileDownload', array($this, 'autoLog'));
 
@@ -341,7 +361,7 @@ class adminLog extends Controller{
             $data = array('data' => $data);
         }
         // $info = isset($data['info']) ? $data['info'] : null;
-        $this->add($data['data']);
+        $this->add($data['data'], _get($data, 'info'));
     }
     // 文件预览日志
     public function fileViewLog($path){
@@ -379,7 +399,21 @@ class adminLog extends Controller{
 			"type" 			=> 'view',
 			"desc"		    => $this->filterIn(),
 		);
-		Model('SystemLog')->addLog('file.view', $data);	
+		$this->model->addLog('file.view', $data);	
+    }
+
+    // 文件上传日志——非系统目录
+    public function fileUploadLog($data, $info=null) {
+        if (ACTION != 'explorer.upload.fileUpload') return;
+        if (!is_array($info) || !array_key_exists('uploadLinkInfo', $info) || empty($this->in['path'])) return;
+        $parse = KodIO::parse($this->in['path']);
+		if ($parse['type'] == KodIO::KOD_SOURCE) return;
+
+        $data = $this->filterIn();
+        $data['path'] = rtrim($parse['path'], '/') . '/' . $data['name'];
+        unset($data['name']);
+        $id = $this->model->addLog('file.upload', $data);
+        if ($id) $this->model->where(array('id' => $id))->save(['type' => 'explorer.upload.fileUpload']);
     }
 
 }

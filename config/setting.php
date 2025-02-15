@@ -212,7 +212,7 @@ $config['settings']['appType'] = array(
 $config['defaultPlugins'] = array(
 	'adminer','DPlayer','jPlayer','photoSwipe','picasa','pdfjs','htmlEditor',
 	'simpleClock','client','webodf','webdav','toolsCommon','oauth','fileThumb',
-	'yzOffice','officeViewer','msgWarning',
+	'yzOffice','officeViewer','msgWarning','storeImport'
 );
 
 //初始化系统配置
@@ -285,8 +285,8 @@ $config['settingSystemDefault'] = array(
 	
 	'treeOpen'			=> 'my,myFav,myGroup,rootGroup,recentDoc,fileType,fileTag,driver',//树目录开启功能;
 	'groupListChild'	=> '1',//罗列子部门; 0=不罗列;1=全部罗列;2=仅树目录罗列;
-	'wallpageDesktop'	=> "1,2,3,4,5,6,7,8,9,10,11,12,13",
-	'wallpageLogin'		=> "2,3,6,8,9,11,12",
+	'wallpageDesktop'	=> "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17",
+	'wallpageLogin'		=> "2,3,6,8,9,11,12,16,17",
 	'emailType'			=> "0",			// 邮件方式
 	'email'				=> "",			// 自定义邮箱服务器配置信息
 	
@@ -475,15 +475,15 @@ $config['settingAll'] = array(
 		"hi"	=>	array("हिन्दी","印地语","Hindi"),
 		"id"	=>	array("Bahasa Indonesia","印尼语","Indonesian"),
 		"it"	=>	array("Italiano","意大利语","Italian"),
-		"ja"	=>	array("日本語","日语","Japanese"),
-		"ko"	=>	array("한국어","韩语","Korean"),
+		"ja"	=>	array("日本語","日语","Japanese"),	// jp
+		"ko"	=>	array("한국어","韩语","Korean"),	 // kr
 		"pl"	=>	array("Polski","波兰语","Polish"),
 		"pt"	=>	array("Português","葡萄牙语","Portuguese"),
 		"ru"	=>	array("Русский язык","俄语","Russian"),
 		"ta"	=>	array("த‌மிழ்","泰米尔语","Tamil"),
 		"th"	=>	array("ภาษาไทย","泰语","Thai"),
 		"tr"	=>	array("Türkçe","土耳其语","Turkish"),
-		"uk"	=>	array("Українська","乌克兰语","Ukrainian",'uk'),
+		"uk"	=>	array("Українська","乌克兰语","Ukrainian",'uk'),//ua,
 		"vi"	=>	array("Tiếng Việt","越南语","Vietnamese",'vn'),// 3=国旗icon
 	),//de el fi fr nl pt	d/m/Y H:i
 	
@@ -532,7 +532,8 @@ $config['authNotNeedLogin'] = array(
 	'sitemap.*',
 	'install.*',			// 安装/更新
 	'plugin.*',				// 插件排除，权限单独检测;
-	'comment.index.test'	// 临时测试;
+	'comment.index.listData',// 评论列表,权限在对应业务中自行判断;
+	'comment.index.listChildren','comment.index.test'
 );
 
 /**

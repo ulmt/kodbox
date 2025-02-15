@@ -21,20 +21,22 @@ class adminStorage extends Controller {
 		// 获取各存储中占用空间、文件数(io_file)、存储状态
 		$key = md5('io.list.get.'.implode(',',$ids));
 		$res = Cache::get($key);
-		if ($ids && !$res) {
+		if ($ids && $res === false && $this->in['usage'] == '1') {
 			$where = array('ioType'=>array('in',implode(',',$ids)));
 			$res = Model('File')->field(array('ioType'=>'id','count(ioType)'=>'cnt','sum(size)'=>'size'))->where($where)->group('ioType')->select();
-			$res = array_to_keyvalue($res, 'id');
-			Cache::set($key, $res, 300);	// 5分钟
+			$res = array_to_keyvalue($res, 'id');	// 可能没有文件，返回空数组
+			Cache::set($key, $res, 600);	// 10分钟
 		}
+		$fileUse = $res !== false ? true : false;
 		foreach ($result as &$item) {
 			$item['sizeUse'] = intval(_get($res, $item['id'].'.size', 0));
 			$item['fileNum'] = intval(_get($res, $item['id'].'.cnt', 0));
+			$item['fileUse'] = $fileUse;	// 是否含文件使用信息
 			$item['status']	 = 1;
 			if (strtolower($item['driver']) != 'local') continue;
 			$config = $this->model->getConfig($item['id']);
 			$path = $config['basePath'];
-			if (!mk_dir($path) || !is_writable($path)) {
+			if (!mk_dir($path) || !path_writeable($path)) {
 				$item['status'] = 0;
 			}
 		}

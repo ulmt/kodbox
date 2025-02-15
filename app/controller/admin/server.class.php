@@ -32,18 +32,24 @@ class adminServer extends Controller {
 	public function getSrvState(){
 		if(!Input::get('state', null, 0)) return;
 
-		$driver = KodIO::defaultDriver();
-		// 默认为本地存储，且大小不限制，则获取所在磁盘大小
-		if(strtolower($driver['driver']) == 'local' && $driver['sizeMax'] == '0') {
-			$path = realpath($driver['config']['basePath']);
-			$sizeDef = $this->srvSize($path);
-		}else{
-			$sizeUse = Model('File')->where(array('ioType' => $driver['id']))->sum('size');
-			$sizeDef = array(
-				'sizeTotal' => ((float) $driver['sizeMax']) * 1024 * 1024 * 1024,
-				'sizeUse' => (float) $sizeUse
-			);
+		// 系统默认存储使用量
+		$sizeDef = Cache::get('kod_def_store_size');
+		if (!$sizeDef) {
+			$driver = KodIO::defaultDriver();
+			// 默认为本地存储，且大小不限制，则获取所在磁盘大小
+			if(strtolower($driver['driver']) == 'local' && $driver['sizeMax'] == '0') {
+				$path	 = realpath($driver['config']['basePath']);
+				$sizeDef = $this->srvSize($path);
+			}else{
+				$sizeUse = Model('File')->where(array('ioType' => $driver['id']))->sum('size');
+				$sizeDef = array(
+					'sizeTotal'	=> ((float) $driver['sizeMax']) * 1024 * 1024 * 1024,
+					'sizeUse'	=> (float) $sizeUse
+				);
+			}
+			Cache::set('kod_def_store_size', $sizeDef, 600);
 		}
+		// 系统内存、CPU使用情况
 		$server = new ServerInfo();
 		$memUsage = $server->memUsage();
 		$sizeMem = array(
@@ -155,7 +161,14 @@ class adminServer extends Controller {
 		$data['php_info']['version'] = $phpVersion;
 		$info = array('memory_limit', 'post_max_size', 'upload_max_filesize', 'max_execution_time', 'max_input_time');
 		foreach($info as $key) {
-			$data['php_info'][$key] = ini_get($key);	// get_cfg_var获取的是配置文件的值，ini_get获取的是当前值
+			$val1 = ini_get($key);	// 系统设置
+			$val2 = get_cfg_var($key);	// 配置文件
+			$value = min(intval($val1), intval($val2));
+			if (!in_array($key, array('max_execution_time', 'max_input_time'))) {
+				// 配置文件中没加单位则为B
+				$value = stripos($val2, 'M') === false ? $val2.'B' : $value.'M';
+			}
+			$data['php_info'][$key] = $value;
 		}
 		$data['php_info']['disable_functions'] = ini_get('disable_functions');
 		$exts = get_loaded_extensions();
@@ -246,14 +259,15 @@ class adminServer extends Controller {
 	 * 缓存配置切换检测、保存
 	 */
 	public function cacheSave(){
-		if($this->in['check'] == '1'){
+		$check = Input::get('check', null, 0);
+		if($check){
 			$type = Input::get('type','in',null,array('file','redis','memcached'));
 		}else{
 			$type = Input::get('cacheType','in',null,array('file','redis','memcached'));
 		}
 		if(in_array($type, array('redis','memcached'))) {
 			$data = $this->_cacheCheck($type);
-			if(Input::get('check', null, 0)) {
+			if($check) {
 				show_json(LNG('admin.setting.checkPassed'));
 			}
 		}
@@ -322,7 +336,7 @@ class adminServer extends Controller {
 		$database = array_change_key_case($database);
 		$type = $this->_dbType($database);
 
-		// 数据库类型
+		// 目标数据库类型
 		$data = Input::getArray(array(
 			'db_type' => array('check' => 'in', 'param' => array('sqlite', 'mysql', 'pdo')),
 			'db_dsn'  => array('default' => ''),	// mysql/sqlite
@@ -477,7 +491,7 @@ class adminServer extends Controller {
     }
 
     // 生成全新的数据库
-	public function dbChangeSave($dbType, $pdo, $database){
+	private function dbChangeSave($dbType, $pdo, $database){
         // 1. 获取数据库配置信息
 		$dbList = $this->validDbList();
 		if($dbType == 'sqlite') {
@@ -502,7 +516,7 @@ class adminServer extends Controller {
 		$key = 'db_change.new_config.' . date('Y-m-d');
 		Cache::set($key, array('type' => $dbType, 'db' => $option), 3600*24);
 
-        // 2. 复制数据库
+        // 2. 复制数据库——读取当前库表结构、表数据，写入到新增库
         $this->dbChangeAct($database, $option, $dbType);
 
         // 3.保存配置
@@ -538,7 +552,7 @@ class adminServer extends Controller {
 	 * @param [type] $type	新增db类型
 	 * @return void
 	 */
-    public function dbChangeAct($database, $option, $type){
+    private function dbChangeAct($database, $option, $type){
 		// 1.初始化db
 		$manageOld = new DbManage($database);
 		$manageNew = new DbManage($option);

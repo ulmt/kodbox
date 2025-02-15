@@ -39,7 +39,12 @@ class adminMember extends Controller{
 		$data = Input::getArray(array(
 			"groupID"	=> array("check"=>"require",'default'=>0),
 			"fields"	=> array("check"=>"require",'default'=>''),
-			"status"	=> array("default"=>null)
+			"status"	=> array("default"=>null),
+
+			// 时间范围查询，兼容接口需求
+			"timeType"	=> array("check"=>"in",'default'=>'createTime','param'=>array('createTime','modifyTime','lastLogin')),
+			"timeFrom"	=> array("default"=>null),
+			"timeTo"	=> array("default"=>null),
 		));
 		if(!$data['groupID']){show_json(array(),true);}
 		if($data['groupID'] == 1) $data['groupID'] = 0;	// 根部门（id=1）获取全部用户
@@ -139,6 +144,7 @@ class adminMember extends Controller{
 			"sex" 		=> array("check"=>"require","default"=>1),//0女1男
 			"status" 	=> array("default"=>1),
 		));
+		$data['password'] = KodUser::parsePass($data['password']);
 		if( !ActionCall('filter.userCheck.password',$data['password']) ){
 			return ActionCall('filter.userCheck.passwordTips');
 		}
@@ -242,9 +248,11 @@ class adminMember extends Controller{
 				$data[$key] = '';
 			}
 		}
-		if( $data['password'] && 
-			!ActionCall('filter.userCheck.password',$data['password']) ){
-			return ActionCall('filter.userCheck.passwordTips');
+		if( $data['password'] ) {
+			$data['password'] = KodUser::parsePass($data['password']);
+			if (!ActionCall('filter.userCheck.password',$data['password']) ){
+				return ActionCall('filter.userCheck.passwordTips');
+			}
 		}
 		// 不支持修改自己的权限角色;避免误操作;
 		if($data['userID'] == USER_ID && isset($data['roleID'])){

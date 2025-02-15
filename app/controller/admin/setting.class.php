@@ -123,7 +123,7 @@ class adminSetting extends Controller {
 		@del_dir(TEMP_PATH);
 		@del_dir('/tmp/fileThumb');
 		mk_dir(TEMP_PATH . 'log');
-		Model("File")->clearEmpty();
+		Model("File")->clearEmpty(0);
 		$this->removeFolder('zipView');
 		$this->removeEmptyFolder();
 		Action('explorer.attachment')->clearCache();
@@ -179,12 +179,16 @@ class adminSetting extends Controller {
 	 */
 	public function server(){
 		$data = Input::getArray(array(
-			'tab'	 => array('default'=>'', 'aliasKey'=>'type'),
+			'tab'	 => array('default'=>'', 'aliasKey'=>'type'),	// array('cache','db','recovery')
 			'action' => array('check'=>'in', 'param'=>array('get', 'pinfo', 'save', 'task', 'clear'))
 		));
+		// srvGet/srvPinfo/cacheSave/dbSave/recoverySave
 		$function = ($data['type'] ? $data['type'] : 'srv') . ucfirst($data['action']);
-		// srvGet/cacheSave/dbSave/recoverySave
-		Action('admin.server')->$function();
+		$svcAct = Action('admin.server');
+		if (!method_exists($svcAct, $function)) {
+			show_json(LNG('common.illegalRequest'), false);
+		}
+		$svcAct->$function();
 	}
 	
 	// 将mysql表转为mb4编码; >= 5.53支持mb4;

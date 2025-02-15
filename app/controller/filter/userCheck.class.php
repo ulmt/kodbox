@@ -68,6 +68,7 @@ class filterUserCheck extends Controller {
 	
 	/**
 	 * ip黑名单限制处理;
+	 * 仅判断:IP+设备 (仅限所有人时情况,指定用户时忽略,在登录时判断);
 	 */
 	private function ipCheck(){
 		$this->_checkConfig();
@@ -188,12 +189,12 @@ class filterUserCheck extends Controller {
 	}
 	
 	private function checkDevice($device,$check){
-		$all = 'web,pc-windows,pc-mac,app-android,app-ios';
+		$all = 'web,pc-windows,pc-mac,app-android,app-ios,Webdav';
 		if($check == $all) return true;
 		
 		$system = $device['system'] ? '-'.$device['system'] : '';
 		$currentType = $device['type'].$system;
-		if(strstr($check,$currentType) || strstr($currentType,$check)) return true;	// $device['system']=>'android 12'
+		if (strstr($check, $currentType)) return true;
 		return false;
 	}
 	private function _checkConfig(){
@@ -221,6 +222,11 @@ class filterUserCheck extends Controller {
 			'systemVersion' => '',		//系统版本: ...
 			'appVersion'	=> '',		//平台版本
 		);
+		
+		$webdavAuth = HttpAuth::get();
+		if($webdavAuth && $webdavAuth['user']){
+			$device['type'] = 'Webdav';
+		}
 
 		// pc:windows,mac;
 		if(stristr($ua,'kodcloud') && stristr($ua,'Electron')){
@@ -244,6 +250,9 @@ class filterUserCheck extends Controller {
 			$device['systemVersion'] = strtolower($platform['systemVersion']);
 			$device['appVersion'] 	 = strtolower($platform['appVersion']);
 			$device['moreInfo'] 	 = $platform;
+			if (stripos($device['system'], 'android') !== false) {	// android 12
+				$device['system'] = 'android';
+			}
 		}
 		$device = Hook::filter('filter.getDevice',$device);
 		$_device = $device;

@@ -82,11 +82,15 @@ class explorerAuth extends Controller {
 				// 来源文档权限检测: 有编辑权限或者下载权限;
 				$this->isShowError = false;$errorNum = 0;
 				foreach ($data as $item) {
-					$result = $this->can($item['path'],'download') || $this->can($item['path'],'remove');
-					$errorNum = $result ? $errorNum: ($errorNum+1);
+					$result = $this->can($item['path'],'download');
+					if(!$result){$errorNum++;}
 				}
 				$this->isShowError = true;
-				if($errorNum){$this->errorMsg($this->lastError ? $this->lastError : LNG('explorer.noPermissionAction'),1007);}
+				if($errorNum){
+					$msg  = $this->lastError ? $this->lastError : LNG('explorer.noPermissionAction');
+					$code = $this->lastErrorCode ? $this->lastErrorCode : 1007;
+					$this->errorMsg($msg,$code);
+				}
 				$this->canWrite($this->in['path']);
 				break;
 			case 'explorer.index.pathcuteto':
@@ -102,12 +106,13 @@ class explorerAuth extends Controller {
 					$this->isShowError = false;
 					for ($i=0; $i < count($authTypeArr); $i++) { 
 						$result = $this->can($this->in['path'],$authTypeArr[$i]);
-						$errorNum = $result ? $errorNum: ($errorNum+1);
+						if(!$result){$errorNum++;}
 					}
 					$this->isShowError = true;
 					if($errorNum == count($authTypeArr)){
-						$msg = $this->lastError ? $this->lastError : LNG('explorer.noPermissionAction');
-						$this->errorMsg($msg,1007);
+						$msg  = $this->lastError ? $this->lastError : LNG('explorer.noPermissionAction');
+						$code = $this->lastErrorCode ? $this->lastErrorCode : 1007;
+						$this->errorMsg($msg,$code);
 					}
 				}
 				break;
@@ -281,9 +286,16 @@ class explorerAuth extends Controller {
 		Hook::trigger("explorer.auth.can",$pathInfo,$action);
 		// 个人私密空间是否登录检测;
 		if($pathInfo && isset($pathInfo['sourceID']) && $pathInfo['targetType'] == 'user'){
-			$userSafeCheck = Action('explorer.listSafe')->authCheck($pathInfo,$action);
-			if($userSafeCheck){return $this->errorMsg($userSafeCheck,1101);}
+			$errorMsg = Action('explorer.listSafe')->authCheck($pathInfo,$action);
+			if($errorMsg){return $this->errorMsg($errorMsg,1101);}
 		}
+		
+		//上层文件夹是否需要密码;
+		if($pathInfo && isset($pathInfo['sourceID'])){
+			$errorMsg = Action('explorer.listPassword')->authCheck($pathInfo,$action);
+			if($errorMsg){return $this->errorMsg($errorMsg,1102);}
+		}
+		
 		// source 类型; 新建文件夹 {source:10}/新建文件夹; 去除
 		//文档类型检测：屏蔽用户和部门之外的类型；
 		if($this->allowRootSourceInfo($pathInfo)) return true;
@@ -336,7 +348,8 @@ class explorerAuth extends Controller {
 		if($this->isShowError){
 			return show_json($msg,false,$code);	
 		}
-		$this->lastError = $msg.$code;
+		$this->lastError 	 = $msg;
+		$this->lastErrorCode = $code;
 		return false;
 	}
 	public function getLastError(){return $this->lastError;}
@@ -411,6 +424,11 @@ class explorerAuth extends Controller {
 		$timeout = intval(_get($shareInfo,'options.shareToTimeout',0));
 		if($timeout > 0 && $timeout < time()){
 			return $this->errorMsg(LNG('explorer.share.expiredTips'));
+		}
+		
+		// 关闭协作分享的;
+		if($shareInfo['isShareTo'] == '0'){
+			return $this->errorMsg(LNG('explorer.share.notExist').'[status=0]');
 		}
 
 		// 内部协作分享有效性处理: 当分享者被禁用,没有分享权限,所在文件不再拥有分享权限时自动禁用外链分享;
